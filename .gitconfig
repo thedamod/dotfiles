@@ -1,0 +1,7 @@
+[user]
+	name = Abhiram
+	email = damod.d77@gmail.com
+[init]
+	defaultBranch = main
+[pull]
+	rebase = false
