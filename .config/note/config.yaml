@@ -1,0 +1,18 @@
+config_dir: /home/apollo/.config/note
+notes_dir: /home/apollo/.local/share/note
+archive_dir: /home/apollo/.local/share/note/archive
+editor: /usr/bin/vi
+layout:
+    sidebar_width: 30
+    padding:
+        horizontal: 2
+        vertical: 1
+    heights:
+        header: 1
+        footer: 1
+        status: 1
+        help: 1
+    header_gap: 1
+theme:
+    light: default
+    dark: default

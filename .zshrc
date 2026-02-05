@@ -58,3 +58,22 @@ fi
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
+
+# opencode
+export PATH=/home/apollo/.opencode/bin:$PATH
+
+. "$HOME/.local/bin/env"
+
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
+
+# pnpm
+export PNPM_HOME="/home/apollo/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
+
+export PATH="$HOME/dotfiles/bookmark_manager:$PATH"
+
+
