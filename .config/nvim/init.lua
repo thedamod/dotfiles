@@ -22,7 +22,7 @@ vim.opt.clipboard:append({ "unnamed", "unnamedplus" })
 
 -- Display settings
 vim.opt.termguicolors = true
-vim.o.background = "dark" -- set to "dark" for dark theme
+vim.o.background = "light" -- set to "dark" for dark theme
 
 -- Scrolling and UI settings
 vim.opt.wrap = false
