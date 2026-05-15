@@ -1,0 +1,97 @@
+# Secrets, credentials, and auth state (never track)
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.jks
+*.keystore
+*.kdbx
+secrets.*
+*.secrets.*
+credentials.*
+*.credentials.*
+token.*
+*.token.*
+auth.json
+auth.yaml
+auth.yml
+api-key.*
+apikey.*
+api_key.*
+*.bak
+*.backup
+*.backup.*
+
+# SSH/GPG/Kubernetes/cloud credentials
+.ssh/
+.gnupg/
+.kube/
+.aws/
+.azure/
+.gcloud/
+.docker/config.json
+.netrc
+.npmrc
+.pypirc
+.cargo/credentials*
+
+# Pi agent private/runtime state
+.pi/agent/auth.json
+.pi/agent/sessions/
+.pi/agent/**/*.log
+
+# Agent/runtime private state
+.agents/**/*.log
+.agents/**/.env*
+.agents/**/auth.json
+.agents/**/credentials.*
+.agents/**/secrets.*
+.agents/**/token.*
+
+# App auth/state that should not be tracked in dotfiles.
+.config/cursor/auth.json
+.config/cursor/prompt_history.json
+.config/gh/
+
+# Editor and shell state that should not be tracked in dotfiles.
+.config/dconf/user
+.config/go/telemetry/
+.config/opencode/bun.lock
+.config/opencode/package-lock.json
+.config/obsidian/.org.chromium*
+.config/obsidian/Cache/
+.config/obsidian/Cookies
+.config/obsidian/Cookies-journal
+.config/obsidian/Crashpad/
+.config/obsidian/DawnGraphiteCache/
+.config/obsidian/DawnWebGPUCache/
+.config/obsidian/DIPS
+.config/obsidian/Dictionaries/
+.config/obsidian/GPUCache/
+.config/obsidian/IndexedDB/
+.config/obsidian/Local Storage/
+.config/obsidian/Network Persistent State
+.config/obsidian/Partitions/
+.config/obsidian/Session Storage/
+.config/obsidian/Shared Dictionary/
+.config/obsidian/Trust Tokens
+.config/obsidian/Trust Tokens-journal
+.config/obsidian/adblock/
+.config/obsidian/WebStorage/
+.config/obsidian/Code Cache/
+.config/obsidian/obsidian.log
+.config/pulse/cookie
+.config/turborepo/telemetry.json
+.config/uv/**
+
+# Shell/editor caches
+.zsh_history
+.bash_history
+.lesshst
+.viminfo
+.zcompdump*

@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "obsidian-bases": {
+      "source": "kepano/obsidian-skills",
+      "sourceType": "github",
+      "computedHash": "ed0a53502693e56c67575a9958daca9a3a1ac7ba483367f400b4cad9488bfb3c"
+    }
+  }
+}

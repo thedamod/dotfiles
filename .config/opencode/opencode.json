@@ -1,0 +1,25 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "ollama": {
+      "models": {
+        "qwen3.5:0.8b": {
+          "_launch": true,
+          "name": "qwen3.5:0.8b"
+        },
+        "qwen3.5:4b": {
+          "_launch": true,
+          "name": "qwen3.5:4b"
+        }
+      },
+      "name": "Ollama",
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "http://127.0.0.1:11434/v1"
+      }
+    }
+  },
+  "plugin": [
+    "opencode-antigravity-auth"
+  ]
+}

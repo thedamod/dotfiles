@@ -1,0 +1,15 @@
+{
+  "lastChangelogVersion": "0.74.0",
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.3-codex",
+  "defaultThinkingLevel": "low",
+  "images": {
+    "blockImages": false
+  },
+  "editorPaddingX": 0,
+  "collapseChangelog": true,
+  "quietStartup": true,
+  "enableInstallTelemetry": false,
+  "theme": "github-dark",
+  "doubleEscapeAction": "tree"
+}

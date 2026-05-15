@@ -1,0 +1,152 @@
+{
+  "version": 3,
+  "skills": {
+    "ai-sdk": {
+      "source": "vercel/ai",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/vercel/ai.git",
+      "skillPath": "skills/use-ai-sdk/SKILL.md",
+      "skillFolderHash": "d093459d6ee53c2dbc99278f34f053aef29c44ee",
+      "installedAt": "2026-02-03T02:57:15.853Z",
+      "updatedAt": "2026-02-05T09:38:39.411Z"
+    },
+    "railway-docs": {
+      "source": "railwayapp/railway-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/railwayapp/railway-skills.git",
+      "skillPath": "plugins/railway/skills/railway-docs/SKILL.md",
+      "skillFolderHash": "f4d6cbac80fd078b65d5d3f95803cfd52b0d55b2",
+      "installedAt": "2026-02-03T10:23:39.592Z",
+      "updatedAt": "2026-02-03T10:23:39.592Z"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/vercel-labs/agent-skills.git",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "skillFolderHash": "190395c0dca241d4edfe36e585373e68ae7fbfa6",
+      "installedAt": "2026-02-25T02:31:02.655Z",
+      "updatedAt": "2026-04-01T11:55:02.660Z"
+    },
+    "obsidian-cli": {
+      "source": "kepano/obsidian-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/kepano/obsidian-skills.git",
+      "skillPath": "skills/obsidian-cli/SKILL.md",
+      "skillFolderHash": "96254a554e480359de7b685571876f2e7f9ba57d",
+      "installedAt": "2026-03-24T14:49:40.416Z",
+      "updatedAt": "2026-03-24T14:49:40.416Z"
+    },
+    "obsidian-markdown": {
+      "source": "kepano/obsidian-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/kepano/obsidian-skills.git",
+      "skillPath": "skills/obsidian-markdown/SKILL.md",
+      "skillFolderHash": "5caf5d9e7de204f3904216857545f2aa36bcfcac",
+      "installedAt": "2026-03-24T14:49:55.616Z",
+      "updatedAt": "2026-03-24T14:49:55.616Z"
+    },
+    "full-output-enforcement": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/Leonxlnx/taste-skill.git",
+      "skillPath": "skills/output-skill/SKILL.md",
+      "skillFolderHash": "3dd6ad49b667d15182acddc9d3e4f7763ae33c9c",
+      "installedAt": "2026-04-01T11:55:01.950Z",
+      "updatedAt": "2026-04-01T11:55:01.950Z"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/anthropics/skills.git",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "skillFolderHash": "928950704df8a8b885c03de5da626331e6f29cf8",
+      "pluginName": "example-skills",
+      "installedAt": "2026-04-01T11:55:02.179Z",
+      "updatedAt": "2026-04-01T11:55:02.179Z"
+    },
+    "redesign-existing-projects": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/Leonxlnx/taste-skill.git",
+      "skillPath": "skills/redesign-skill/SKILL.md",
+      "skillFolderHash": "d9cffe56d26d4af7687299e391a7be1cfaf46c1b",
+      "installedAt": "2026-04-01T11:55:03.214Z",
+      "updatedAt": "2026-04-01T11:55:03.214Z"
+    },
+    "shadcn-ui": {
+      "source": "giuseppe-trisciuoglio/developer-kit",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/giuseppe-trisciuoglio/developer-kit.git",
+      "skillPath": "plugins/developer-kit-typescript/skills/shadcn-ui/SKILL.md",
+      "skillFolderHash": "b891a25c0d82630bb534d87606f83dc945a2398f",
+      "installedAt": "2026-04-01T11:55:03.639Z",
+      "updatedAt": "2026-04-01T11:55:03.639Z"
+    },
+    "high-end-visual-design": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/Leonxlnx/taste-skill.git",
+      "skillPath": "skills/soft-skill/SKILL.md",
+      "skillFolderHash": "1b5943432ddd1b980206968c529a323cc992dbec",
+      "installedAt": "2026-04-01T11:55:04.435Z",
+      "updatedAt": "2026-04-01T11:55:04.435Z"
+    },
+    "design-taste-frontend": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/Leonxlnx/taste-skill.git",
+      "skillPath": "skills/taste-skill/SKILL.md",
+      "skillFolderHash": "826d9d12328f2d8b2c00ad5c28e02612d2484faf",
+      "installedAt": "2026-04-01T11:55:05.548Z",
+      "updatedAt": "2026-04-01T11:55:05.548Z"
+    },
+    "improve-codebase-architecture": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "skillPath": "skills/engineering/improve-codebase-architecture/SKILL.md",
+      "skillFolderHash": "3ad8fa787b3b9b622d1f5a3d0afc27812ac782fa",
+      "pluginName": "mattpocock-skills",
+      "installedAt": "2026-04-30T10:30:44.524Z",
+      "updatedAt": "2026-04-30T10:30:44.524Z"
+    },
+    "grill-me": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "skillPath": "skills/productivity/grill-me/SKILL.md",
+      "skillFolderHash": "2a1ad17028306ebe45f0e49703fa28b9b2e7f499",
+      "pluginName": "mattpocock-skills",
+      "installedAt": "2026-04-30T11:26:03.258Z",
+      "updatedAt": "2026-04-30T11:26:03.258Z"
+    },
+    "uncodixfy": {
+      "source": "cyxzdev/Uncodixfy",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/cyxzdev/Uncodixfy.git",
+      "skillPath": "SKILL.md",
+      "skillFolderHash": "e0e028058b5259debdd94b78147c6d6c77bf7da2",
+      "installedAt": "2026-05-14T03:52:40.442Z",
+      "updatedAt": "2026-05-14T03:52:40.442Z"
+    }
+  },
+  "dismissed": {
+    "findSkillsPrompt": true
+  },
+  "lastSelectedAgents": [
+    "amp",
+    "antigravity",
+    "cline",
+    "codex",
+    "cursor",
+    "deepagents",
+    "dexto",
+    "firebender",
+    "gemini-cli",
+    "github-copilot",
+    "kimi-cli",
+    "opencode",
+    "warp"
+  ]
+}
