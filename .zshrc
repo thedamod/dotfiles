@@ -44,13 +44,6 @@ if [ -d "$FNM_PATH" ]; then
   eval "`fnm env`"
 fi
 
-# fnm
-FNM_PATH="/home/apollo/.local/share/fnm"
-if [ -d "$FNM_PATH" ]; then
-  export PATH="$FNM_PATH:$PATH"
-  eval "`fnm env`"
-fi
-
 # bun completions
 [ -s "/home/apollo/.bun/_bun" ] && source "/home/apollo/.bun/_bun"
 
@@ -58,22 +51,7 @@ fi
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
-
-# opencode
-export PATH=/home/apollo/.opencode/bin:$PATH
-
-. "$HOME/.local/bin/env"
-
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
-
-# pnpm
-export PNPM_HOME="/home/apollo/.local/share/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
-# pnpm end
-
 export PATH="$HOME/dotfiles/bookmark_manager:$PATH"
 
-
+alias obsidian='obsidian.com'
+export PATH=/home/apollo/.local/bin:$PATH
