@@ -6,7 +6,7 @@
   "images": {
     "blockImages": false
   },
-  "editorPaddingX": 1,
+  "editorPaddingX": 0,
   "collapseChangelog": true,
   "quietStartup": true,
   "enableInstallTelemetry": false,
@@ -15,5 +15,10 @@
   "packages": [
     "npm:pi-image-tools",
     "npm:@dreki-gg/pi-subagent"
-  ]
+  ],
+  "enableSkillCommands": false,
+  "transport": "auto",
+  "warnings": {
+    "anthropicExtraUsage": true
+  }
 }
