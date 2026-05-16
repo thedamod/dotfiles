@@ -7,10 +7,10 @@ import type {
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
 
-const DEEP_BLUE: Rgb = [22, 83, 189];
-const BLUE: Rgb = [48, 129, 247];
-const SKY: Rgb = [93, 171, 255];
-const ICE: Rgb = [151, 205, 255];
+const DEEP_BLUE: Rgb = [48, 55, 75];
+const BLUE: Rgb = [70, 90, 140];
+const SKY: Rgb = [110, 162, 255];
+const ICE: Rgb = [140, 170, 210];
 const PALETTE: Rgb[] = [DEEP_BLUE, BLUE, SKY, ICE, SKY, BLUE];
 
 type Rgb = [number, number, number];
