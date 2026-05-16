@@ -14,7 +14,6 @@
   "doubleEscapeAction": "tree",
   "packages": [
     "npm:pi-image-tools",
-    "npm:@dreki-gg/pi-subagent",
-    "npm:pi-animations"
+    "npm:@dreki-gg/pi-subagent"
   ]
 }
