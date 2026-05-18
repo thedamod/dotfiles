@@ -118,17 +118,10 @@ function isBlankSpacer(component: Renderable) {
 }
 
 function renderHeader(width: number, phase: number, subtitleText: string) {
-  const lines = TITLE_LINES.map((line, row) =>
-    gradientText(center(line, width), phase + row * 0.045),
-  );
-  const subtitle = center(subtitleText, width);
-
-  return [
-    "",
-    ...lines,
-    `${BOLD}${gradientText(subtitle, phase + 0.18)}${RESET}`,
-    "",
-  ];
+  const title = `${BOLD}${gradientText("pi", phase)}${RESET}`;
+  const sep = fg([95, 87, 78], "  ·  ");
+  const subtitle = fg([139, 129, 114], subtitleText);
+  return ["", center(`${title}${sep}${subtitle}`, width), ""];
 }
 
 export default function (pi: ExtensionAPI) {

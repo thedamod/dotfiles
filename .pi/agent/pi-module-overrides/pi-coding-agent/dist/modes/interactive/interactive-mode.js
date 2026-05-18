@@ -458,7 +458,6 @@ export class InteractiveMode {
         this.ui.addChild(this.editorContainer);
         this.ui.addChild(this.widgetContainerBelow);
         this.ui.addChild(this.footer);
-        this.ui.setFixedBottomCount?.(4);
         this.ui.setFocus(this.editor);
         this.setupKeyHandlers();
         this.setupEditorSubmitHandler();

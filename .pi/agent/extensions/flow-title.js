@@ -1,4 +1,4 @@
-// dotfiles/.pi/agent/extensions/flow-title.ts
+// dotfiles/.pi/agent/extensions-src/flow-title.ts
 import path from "node:path";
 var RESET = "\x1B[0m";
 var BOLD = "\x1B[1m";
@@ -7,14 +7,6 @@ var BLUE = [70, 90, 140];
 var SKY = [110, 162, 255];
 var ICE = [140, 170, 210];
 var PALETTE = [DEEP_BLUE, BLUE, SKY, ICE, SKY, BLUE];
-var TITLE_LINES = [
-  "  ██████╗  ██╗ ",
-  "  ██╔══██╗ ██║ ",
-  "  ██████╔╝ ██║ ",
-  "  ██╔═══╝  ██║ ",
-  "  ██║      ██║ ",
-  "  ╚═╝      ╚═╝ "
-];
 function mix(a, b, t) {
   return Math.round(a + (b - a) * t);
 }
@@ -50,14 +42,10 @@ function projectName() {
   return path.basename(process.cwd()) || "session";
 }
 function renderHeader(width, phase, subtitleText) {
-  const lines = TITLE_LINES.map((line, row) => gradientText(center(line, width), phase + row * 0.045));
-  const subtitle = center(subtitleText, width);
-  return [
-    "",
-    ...lines,
-    `${BOLD}${gradientText(subtitle, phase + 0.18)}${RESET}`,
-    ""
-  ];
+  const title = `${BOLD}${gradientText("pi", phase)}${RESET}`;
+  const sep = fg([95, 87, 78], "  ·  ");
+  const subtitle = fg([139, 129, 114], subtitleText);
+  return ["", center(`${title}${sep}${subtitle}`, width), ""];
 }
 function flow_title_default(pi) {
   let requestRender;
