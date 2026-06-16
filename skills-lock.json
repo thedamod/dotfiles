@@ -5,6 +5,12 @@
       "source": "kepano/obsidian-skills",
       "sourceType": "github",
       "computedHash": "ed0a53502693e56c67575a9958daca9a3a1ac7ba483367f400b4cad9488bfb3c"
+    },
+    "use-railway": {
+      "source": "railwayapp/railway-skills",
+      "sourceType": "github",
+      "skillPath": "skills/use-railway/SKILL.md",
+      "computedHash": "7045ad8dc382af94e3ce345b69fcab7a7466914d6d052f157a8a440ec21ec099"
     }
   }
 }

@@ -1,8 +1,8 @@
 {
-  "lastChangelogVersion": "0.75.1",
-  "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.5",
-  "defaultThinkingLevel": "low",
+  "lastChangelogVersion": "0.79.4",
+  "defaultProvider": "opencode",
+  "defaultModel": "mimo-v2.5-free",
+  "defaultThinkingLevel": "high",
   "images": {
     "blockImages": false
   },
@@ -10,16 +10,15 @@
   "collapseChangelog": true,
   "quietStartup": true,
   "enableInstallTelemetry": false,
-  "theme": "grok-build",
+  "theme": "grok",
   "doubleEscapeAction": "tree",
   "packages": [
     "npm:pi-image-tools",
     "npm:@dreki-gg/pi-subagent",
-    "npm:pi-web-providers"
+    "npm:pi-web-providers",
+    "npm:pi-openai-codex-status",
+    "npm:@ff-labs/pi-fff"
   ],
-  "enableSkillCommands": false,
-  "transport": "auto",
-  "warnings": {
-    "anthropicExtraUsage": true
-  }
+  "enableSkillCommands": true,
+  "transport": "auto"
 }

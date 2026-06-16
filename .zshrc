@@ -55,3 +55,10 @@ export PATH="$HOME/dotfiles/bookmark_manager:$PATH"
 
 alias obsidian='obsidian.com'
 export PATH=/home/apollo/.local/bin:$PATH
+
+# Local secrets, not tracked in dotfiles
+[ -f "$HOME/.secrets/firecrawl.env" ] && source "$HOME/.secrets/firecrawl.env"
+
+
+# Added by Antigravity CLI installer
+export PATH="/home/apollo/.local/bin:$PATH"
