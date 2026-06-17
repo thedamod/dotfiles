@@ -1,13 +1,10 @@
 import { spawnSync } from "child_process";
 import { randomUUID } from "crypto";
-import { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync, writeFileSync } from "fs";
+import { tmpdir } from "os";
+import { join } from "path";
 import { type ExtensionAPI, CustomEditor } from "@earendil-works/pi-coding-agent";
-import {
-  visibleWidth,
-  truncateToWidth,
-  type TUI,
-  type EditorTheme,
-} from "@earendil-works/pi-tui";
+import { matchesKey, visibleWidth, truncateToWidth, type TUI, type EditorTheme } from "@earendil-works/pi-tui";
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                           */
@@ -33,7 +30,7 @@ function fmtThink(level: string): string {
 const SPIN = ["\u280B", "\u2819", "\u2839", "\u2838", "\u283C", "\u2834", "\u2826", "\u2827", "\u2807", "\u280F"];
 
 /* ------------------------------------------------------------------ */
-/*  WSL2 clipboard helper                                             */
+/*  WSL2 clipboard helpers (merged from pi-wsl-images)               */
 /* ------------------------------------------------------------------ */
 
 function isWSL(): boolean {
@@ -44,49 +41,44 @@ function isWSL(): boolean {
   } catch { return false; }
 }
 
-/**
- * Read clipboard image on WSL2 via PowerShell.
- * Avoids `wslpath` because /tmp/ on Linux ≠ Windows TEMP.
- * Instead we get the Windows temp dir from PowerShell itself,
- * then translate the path ourselves.
- */
-function pasteImageFromClipboard(insert: (path: string) => void) {
+function readWindowsClipboardImagePng(): Buffer | null {
+  const script = [
+    "Add-Type -AssemblyName System.Windows.Forms",
+    "Add-Type -AssemblyName System.Drawing",
+    "$img = [System.Windows.Forms.Clipboard]::GetImage()",
+    "if (-not $img) { exit 2 }",
+    "$ms = New-Object System.IO.MemoryStream",
+    "$img.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png)",
+    "[Convert]::ToBase64String($ms.ToArray())",
+  ].join("; ");
+
   try {
-    /* 1. Get Windows temp directory from within PowerShell */
-    const psGetTmp = spawnSync("powershell.exe", ["-NoProfile", "-Command", "Write-Output $env:TEMP"], {
-      timeout: 10000,
-    });
-    if (psGetTmp.status !== 0 || !psGetTmp.stdout.toString().trim()) return;
-    const winTemp = psGetTmp.stdout.toString("utf-8").trim(); // e.g. C:\Users\laksm\AppData\Local\Temp
+    const result = spawnSync(
+      "powershell.exe",
+      ["-NoLogo", "-NoProfile", "-NonInteractive", "-STA", "-Command", script],
+      { encoding: "utf8", timeout: 10000, maxBuffer: 64 * 1024 * 1024 },
+    );
+    if (result.status !== 0) return null;
+    const base64 = (result.stdout ?? "").trim();
+    if (!base64) return null;
+    return Buffer.from(base64, "base64");
+  } catch {
+    return null;
+  }
+}
 
-    /* 2. Convert Windows C:\... → /mnt/c/... */
-    const mnt = winTemp.replace(/\\/g, "/").replace(/^([A-Za-z]):\//i, "/mnt/$1/");
-    if (!mnt.startsWith("/mnt/")) return;
+function writeTempImage(bytes: Buffer): string {
+  const filePath = join(tmpdir(), `pi-wsl-clipboard-${randomUUID()}.png`);
+  writeFileSync(filePath, bytes);
+  return filePath;
+}
 
-    const fileName = `pi-wsl-clip-${randomUUID()}.png`;
-    const winPath = `${winTemp}\\${fileName}`.replace(/'/g, "''");
-    const linuxPath = `${mnt}/${fileName}`;
-
-    /* 3. Run PowerShell to get clipboard image and save to Windows temp */
-    const script = [
-      "Add-Type -AssemblyName System.Windows.Forms",
-      "Add-Type -AssemblyName System.Drawing",
-      `$path = '${winPath}'`,
-      "$img = [System.Windows.Forms.Clipboard]::GetImage()",
-      "if ($img) { $img.Save($path, [System.Drawing.Imaging.ImageFormat]::Png); Write-Output 'ok' } else { Write-Output 'empty' }",
-    ].join("; ");
-
-    const r = spawnSync("powershell.exe", ["-NoProfile", "-Command", script], {
-      timeout: 20000,
-    });
-    if (r.status !== 0) return;
-    const output = r.stdout.toString("utf-8").trim();
-    if (output !== "ok") return;
-
-    /* 4. Read back from the /mnt/c/... path */
-    if (!existsSync(linuxPath)) return;
-    insert(linuxPath);
-  } catch { /* ignore */ }
+function replaceImagePlaceholders(text: string, placeholders: Map<string, string>): string {
+  let next = text;
+  for (const [placeholder, filePath] of placeholders) {
+    next = next.split(placeholder).join(filePath);
+  }
+  return next;
 }
 
 /* ------------------------------------------------------------------ */
@@ -106,6 +98,40 @@ export default function (pi: ExtensionAPI) {
   let firstTok: number | null = null;
   let lastTtft = 0;
   let tps = 0;
+
+  // WSL image paste state
+  const placeholders = new Map<string, string>();
+  const nextImageNumber = { value: 1 };
+
+  /* -- WSL paste command (from pi-wsl-images) -- */
+  pi.registerCommand("wsl-paste-image", {
+    description: "Paste an image from the Windows clipboard into the editor",
+    handler: async (_args: any, ctx: any) => {
+      if (!isWSL()) return;
+      const bytes = readWindowsClipboardImagePng();
+      if (!bytes || bytes.length === 0) {
+        ctx.ui.notify("No image found in the Windows clipboard", "warning");
+        return;
+      }
+      const filePath = writeTempImage(bytes);
+      const placeholder = `[Image #${nextImageNumber.value++}]`;
+      placeholders.set(placeholder, filePath);
+      ctx.ui.pasteToEditor(placeholder);
+      ctx.ui.notify(`Pasted ${placeholder}`, "info");
+    },
+  });
+
+  /* -- WSL input placeholder transformation (from pi-wsl-images) -- */
+  pi.on("input", async (event: any) => {
+    const transformed = replaceImagePlaceholders(event.text, placeholders);
+    const hadPlaceholders = placeholders.size > 0;
+    if (hadPlaceholders) {
+      placeholders.clear();
+      nextImageNumber.value = 1;
+    }
+    if (transformed === event.text) return { action: "continue" };
+    return { action: "transform", text: transformed };
+  });
 
   function startSpin() {
     stopSpin();
@@ -137,111 +163,133 @@ export default function (pi: ExtensionAPI) {
     const out = r?.stdout.trim();
     branch = out && out.length > 0 ? out : undefined;
 
-    // Restore built-in header (no custom header — avoids scroll issues)
+    // Restore built-in header (no custom header)
     ctx.ui.setHeader(undefined);
 
-    /* -- editor: rounded borders with model / dir info -------------- */
-
+    /* -- editor: rounded borders + WSL paste support -- */
     ctx.ui.setEditorComponent((_tui: TUI, edTheme: EditorTheme, kb: any) => {
       if (!tui) tui = _tui;
 
       class RoundedEditor extends (CustomEditor as any) {
         constructor() {
           super(_tui, edTheme, kb, { paddingX: 1 });
-          this.borderColor = muted;
+          this._muted = muted;
 
           // WSL2: override paste handler to use PowerShell (avoids xclip DISPLAY errors)
-          if (process.platform === "linux" && isWSL()) {
+          if (isWSL()) {
             this.onPasteImage = () => {
-              pasteImageFromClipboard((filePath: string) => {
-                this.insertTextAtCursor?.(filePath);
-                _tui.requestRender();
-              });
+              const bytes = readWindowsClipboardImagePng();
+              if (!bytes || bytes.length === 0) return;
+              const filePath = writeTempImage(bytes);
+              this.insertTextAtCursor?.(filePath);
+              _tui.requestRender();
             };
           }
         }
 
-        render(width: number): string[] {
-          const result = super.render(width);
-          if (result.length < 2 || width < 4) return result;
-
-          // autocomplete separator line → blank
-          const hasAc = (this as any).autocompleteState;
-          const sep = hasAc && result.length > 3
-            ? result.findIndex((l: string, i: number) => i > 0 && l.indexOf("\u2500") !== -1)
-            : -1;
-          if (sep > 0) result[sep] = " ".repeat(Math.max(0, width));
-
-          const top = 0;
-          const bot = result.length - 1;
-
-          /* -- top border: label left, model / tps right -- */
-
-          const rawLabel = (this as any).statusLabel;
-          const labStr = (typeof rawLabel === "string" && rawLabel && width > 14)
-            ? " " + rawLabel + " " : "";
-          const labW = visibleWidth(labStr);
-
-          const trParts: string[] = [];
-          if (modelId) trParts.push(modelId);
-          if (thinkLvl !== "off") trParts.push(fmtThink(thinkLvl));
-          if (tps > 0) trParts.push("\u26A1" + tps.toFixed(0) + "tps");
-          if (lastTtft > 0) trParts.push(String(lastTtft) + "ms");
-          const trStr = trParts.length ? " " + trParts.join(" ") + " " : "";
-          const trW = trStr ? visibleWidth(trStr) : 0;
-
-          const fill = Math.max(0, width - 2 - labW - trW);
-          const fL = Math.floor(fill / 2);
-          const fR = fill - fL;
-
-          result[top] = muted(
-            "\u256D" +
-            "\u2500".repeat(fL) +
-            labStr +
-            "\u2500".repeat(fR) +
-            trStr +
-            "\u2500".repeat(Math.max(0, width - 2 - fL - labW - fR - trW)) +
-            "\u256E"
-          );
-
-          /* -- bottom border: padded dir left, padded usage right -- */
-
-          const ds = fmtCwd(ctx.cwd);
-          const bs = branch ? "\u2387 " + branch : "";
-          // add leading/trailing spaces so content doesn't sit right against the arcs
-          const leftRaw = [ds, bs].filter(Boolean).join(" ");
-          const leftStr = leftRaw ? " " + leftRaw + " " : "";
-
-          const brParts: string[] = [fmtContext(ctx)];
-          if (working) brParts.push(SPIN[spinIdx]);
-          try {
-            const fd = (_tui as any).footerDataProvider;
-            if (fd?.getExtensionStatuses) {
-              for (const [, v] of Array.from(fd.getExtensionStatuses().entries())) {
-                brParts.push(v);
+        // Handle Alt+V for WSL image paste (merged from pi-wsl-images)
+        handleInput(data: string): void {
+          if (matchesKey(data, "alt+v")) {
+            void (async () => {
+              if (!isWSL()) { super.handleInput(data); return; }
+              const bytes = readWindowsClipboardImagePng();
+              if (!bytes || bytes.length === 0) {
+                super.handleInput(data);
+                return;
               }
-            }
-          } catch {}
-          const rightRaw = brParts.join(" ");
-          const rightStr = rightRaw ? " " + rightRaw + " " : "";
-
-          const leftW = visibleWidth(leftStr);
-          const rightW = visibleWidth(rightStr);
-          const gap = Math.max(0, width - 2 - leftW - rightW);
-
-          result[bot] = muted(
-            "\u2570" + leftStr + "\u2500".repeat(gap) + rightStr + "\u256F"
-          );
-
-          /* -- side borders -- */
-
-          for (let i = top + 1; i < bot; i++) {
-            const inner = truncateToWidth(result[i], Math.max(0, width - 2), "");
-            const pad = " ".repeat(Math.max(0, width - 2 - visibleWidth(inner)));
-            result[i] = muted("\u2502") + inner + pad + muted("\u2502");
+              const filePath = writeTempImage(bytes);
+              const placeholder = `[Image #${nextImageNumber.value++}]`;
+              placeholders.set(placeholder, filePath);
+              this.insertTextAtCursor?.(placeholder);
+              _tui.requestRender();
+            })();
+            return;
           }
 
-          return result;
+          super.handleInput(data);
+        }
+
+        render(width: number): string[] {
+          try {
+            const result = super.render(width);
+            if (result.length < 2 || width < 4) return result;
+
+            const _muted = this._muted || muted;
+
+            // Detect and blank the autocomplete separator line
+            const hasAc = (this as any).autocompleteState;
+            const sep = hasAc && result.length > 3
+              ? result.findIndex((l: string, i: number) => i > 0 && l.indexOf("\u2500") !== -1)
+              : -1;
+            if (sep > 0) result[sep] = " ".repeat(Math.max(0, width));
+
+            const top = 0;
+            const bot = result.length - 1;
+
+            /* -- top border: label left, model / tps right -- */
+            const rawLabel = (this as any).statusLabel;
+            const labStr = (typeof rawLabel === "string" && rawLabel && width > 14)
+              ? " " + rawLabel + " " : "";
+            const labW = visibleWidth(labStr);
+
+            const trParts: string[] = [];
+            if (modelId) trParts.push(modelId);
+            if (thinkLvl !== "off") trParts.push(fmtThink(thinkLvl));
+            if (tps > 0) trParts.push("\u26A1" + tps.toFixed(0) + "tps");
+            if (lastTtft > 0) trParts.push(String(lastTtft) + "ms");
+            const trStr = trParts.length ? " " + trParts.join(" ") + " " : "";
+            const trW = trStr ? visibleWidth(trStr) : 0;
+
+            const fill = Math.max(0, width - 2 - labW - trW);
+            const fL = Math.floor(fill / 2);
+            const fR = fill - fL;
+
+            result[top] = "\u256D" +
+              "\u2500".repeat(fL) +
+              labStr +
+              "\u2500".repeat(fR) +
+              trStr +
+              "\u2500".repeat(Math.max(0, width - 2 - fL - labW - fR - trW)) +
+              "\u256E";
+            result[top] = _muted(result[top]);
+
+            /* -- bottom border: padded dir left, padded usage right -- */
+            const ds = fmtCwd(ctx.cwd);
+            const bs = branch ? "\u2387 " + branch : "";
+            const leftRaw = [ds, bs].filter(Boolean).join(" ");
+            const leftStr = leftRaw ? " " + leftRaw + " " : "";
+
+            const brParts: string[] = [fmtContext(ctx)];
+            if (working) brParts.push(SPIN[spinIdx]);
+            try {
+              const fd = (_tui as any).footerDataProvider;
+              if (fd?.getExtensionStatuses) {
+                for (const [, v] of Array.from(fd.getExtensionStatuses().entries())) {
+                  brParts.push(v);
+                }
+              }
+            } catch { /* ignore */ }
+            const rightRaw = brParts.join(" ");
+            const rightStr = rightRaw ? " " + rightRaw + " " : "";
+
+            const leftW = visibleWidth(leftStr);
+            const rightW = visibleWidth(rightStr);
+            const gap = Math.max(0, width - 2 - leftW - rightW);
+
+            result[bot] = "\u2570" + leftStr + "\u2500".repeat(gap) + rightStr + "\u256F";
+            result[bot] = _muted(result[bot]);
+
+            /* -- side borders -- */
+            for (let i = top + 1; i < bot; i++) {
+              const inner = truncateToWidth(result[i], Math.max(0, width - 2), "");
+              const pad = " ".repeat(Math.max(0, width - 2 - visibleWidth(inner)));
+              result[i] = _muted("\u2502") + inner + pad + _muted("\u2502");
+            }
+
+            return result;
+          } catch (e) {
+            return super.render(width);
+          }
         }
       }
 
@@ -249,19 +297,12 @@ export default function (pi: ExtensionAPI) {
     });
   });
 
-  /* -- agent working spinner ---------------------------------------- */
-
+  /* -- agent working spinner -- */
   pi.on("agent_start", () => { working = true; stopSpin(); startSpin(); tui?.requestRender(); });
   pi.on("agent_end", () => { working = false; stopSpin(); tui?.requestRender(); });
 
-  /* -- TPS / TTFT --------------------------------------------------- */
-
-  pi.on("turn_start", async () => {
-    tStart = Date.now();
-    firstTok = null;
-    // keep last tps/ttft visible until new data arrives
-  });
-
+  /* -- TPS / TTFT -- */
+  pi.on("turn_start", async () => { tStart = Date.now(); firstTok = null; });
   pi.on("message_update", async (ev) => {
     if (ev.message.role !== "assistant") return;
     const now = Date.now();
@@ -270,25 +311,17 @@ export default function (pi: ExtensionAPI) {
     if (typeof c === "string") text = c;
     else if (Array.isArray(c))
       text = c.map((p: any) => (typeof p === "string" ? p : p?.text ?? "")).join("");
-    if (firstTok === null && text.length > 0) {
-      firstTok = now;
-      lastTtft = now - tStart;
-    }
+    if (firstTok === null && text.length > 0) { firstTok = now; lastTtft = now - tStart; }
     const secs = (now - tStart) / 1000;
-    if (secs > 1 && text.length > 4) {
-      tps = Math.round((text.length / 4) / secs);
-    }
+    if (secs > 1 && text.length > 4) tps = Math.round((text.length / 4) / secs);
     tui?.requestRender();
   });
-
   pi.on("turn_end", async () => { tui?.requestRender(); });
 
-  /* -- model / thinking changes ------------------------------------- */
-
+  /* -- model / thinking changes -- */
   pi.on("model_select", async (ev) => { modelId = ev.model.id; provider = ev.model.provider; tui?.requestRender(); });
   pi.on("thinking_level_select", async (ev) => { thinkLvl = ev.level; tui?.requestRender(); });
 
-  /* -- cleanup ------------------------------------------------------ */
-
+  /* -- cleanup -- */
   pi.on("session_shutdown", () => { stopSpin(); tui = void 0; });
 }
