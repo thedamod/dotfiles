@@ -1,0 +1,14 @@
+[Unit]
+Description=CLIProxyAPI Service
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/apollo/cliproxyapi
+ExecStart=/home/apollo/cliproxyapi/cli-proxy-api
+Restart=always
+RestartSec=10
+Environment=HOME=/home/apollo
+
+[Install]
+WantedBy=default.target

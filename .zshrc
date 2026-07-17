@@ -62,3 +62,15 @@ export PATH=/home/apollo/.local/bin:$PATH
 
 # Added by Antigravity CLI installer
 export PATH="/home/apollo/.local/bin:$PATH"
+
+# >>> grok installer >>>
+export PATH="$HOME/.grok/bin:$PATH"
+fpath=(~/.grok/completions/zsh $fpath)
+autoload -Uz compinit && compinit -C
+# <<< grok installer <<<
+#
+alias claudex='CLAUDE_CODE_SUBAGENT_MODEL=gpt-5.6-sol \
+CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1 \
+CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3 \
+ENABLE_TOOL_SEARCH=false \
+claude --model gpt-5.6-sol'

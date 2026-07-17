@@ -163,16 +163,30 @@ export default function (pi: ExtensionAPI) {
     const out = r?.stdout.trim();
     branch = out && out.length > 0 ? out : undefined;
 
-    // Restore built-in header (no custom header)
-    ctx.ui.setHeader(undefined);
+    // Hide default footer (stats are shown in the editor borders)
+    ctx.ui.setFooter(() => ({
+      render: () => [],
+      invalidate: () => {},
+    }));
 
     /* -- editor: rounded borders + WSL paste support -- */
     ctx.ui.setEditorComponent((_tui: TUI, edTheme: EditorTheme, kb: any) => {
       if (!tui) tui = _tui;
 
+      const editorTheme: EditorTheme = {
+        ...edTheme,
+        selectList: {
+          ...edTheme.selectList,
+          selectedPrefix: (text: string) =>
+            appTheme.fg("accent", appTheme.bold(text)),
+          selectedText: (text: string) =>
+            appTheme.fg("accent", appTheme.bold(text)),
+        },
+      };
+
       class RoundedEditor extends (CustomEditor as any) {
         constructor() {
-          super(_tui, edTheme, kb, { paddingX: 1 });
+          super(_tui, editorTheme, kb, { paddingX: 1 });
           this._muted = muted;
 
           // WSL2: override paste handler to use PowerShell (avoids xclip DISPLAY errors)
@@ -211,20 +225,28 @@ export default function (pi: ExtensionAPI) {
 
         render(width: number): string[] {
           try {
-            const result = super.render(width);
-            if (result.length < 2 || width < 4) return result;
+            if (width < 4) return super.render(width);
+            const innerWidth = width - 2;
+            const result = super.render(innerWidth);
+            if (result.length < 2) return result;
 
             const _muted = this._muted || muted;
+            const frame = working
+              ? (s: string) => appTheme.fg("accent", s)
+              : _muted;
 
             // Detect and blank the autocomplete separator line
             const hasAc = (this as any).autocompleteState;
             const sep = hasAc && result.length > 3
               ? result.findIndex((l: string, i: number) => i > 0 && l.indexOf("\u2500") !== -1)
               : -1;
-            if (sep > 0) result[sep] = " ".repeat(Math.max(0, width));
+            if (sep > 0) result[sep] = " ".repeat(innerWidth);
 
             const top = 0;
-            const bot = result.length - 1;
+            // Editor.render() puts its bottom rule before autocomplete rows.
+            // Keep that boundary separate so a one-item exact match is not
+            // mistaken for the editor's bottom border and overwritten.
+            const baseBottom = sep > 0 ? sep : result.length - 1;
 
             /* -- top border: label left, model / tps right -- */
             const rawLabel = (this as any).statusLabel;
@@ -233,7 +255,8 @@ export default function (pi: ExtensionAPI) {
             const labW = visibleWidth(labStr);
 
             const trParts: string[] = [];
-            if (modelId) trParts.push(modelId);
+            const modelLabel = [provider, modelId].filter(Boolean).join("/");
+            if (modelLabel) trParts.push(modelLabel);
             if (thinkLvl !== "off") trParts.push(fmtThink(thinkLvl));
             if (tps > 0) trParts.push("\u26A1" + tps.toFixed(0) + "tps");
             if (lastTtft > 0) trParts.push(String(lastTtft) + "ms");
@@ -243,15 +266,13 @@ export default function (pi: ExtensionAPI) {
             const fill = Math.max(0, width - 2 - labW - trW);
             const fL = Math.floor(fill / 2);
             const fR = fill - fL;
-
-            result[top] = "\u256D" +
+            const topLine = "\u256D" +
               "\u2500".repeat(fL) +
               labStr +
               "\u2500".repeat(fR) +
               trStr +
               "\u2500".repeat(Math.max(0, width - 2 - fL - labW - fR - trW)) +
               "\u256E";
-            result[top] = _muted(result[top]);
 
             /* -- bottom border: padded dir left, padded usage right -- */
             const ds = fmtCwd(ctx.cwd);
@@ -275,18 +296,21 @@ export default function (pi: ExtensionAPI) {
             const leftW = visibleWidth(leftStr);
             const rightW = visibleWidth(rightStr);
             const gap = Math.max(0, width - 2 - leftW - rightW);
+            const bottomLine = "\u2570" + leftStr + "\u2500".repeat(gap) + rightStr + "\u256F";
 
-            result[bot] = "\u2570" + leftStr + "\u2500".repeat(gap) + rightStr + "\u256F";
-            result[bot] = _muted(result[bot]);
+            /* -- side borders, preserving autocomplete rows -- */
+            const editorRows = result.slice(top + 1, baseBottom);
+            const autocompleteRows = result.slice(baseBottom + 1);
+            const bodyRows = autocompleteRows.length > 0
+              ? [...editorRows, " ".repeat(innerWidth), ...autocompleteRows]
+              : editorRows;
+            const framedRows = bodyRows.map((line) => {
+              const inner = truncateToWidth(line, innerWidth, "");
+              const pad = " ".repeat(Math.max(0, innerWidth - visibleWidth(inner)));
+              return frame("\u2502") + inner + pad + frame("\u2502");
+            });
 
-            /* -- side borders -- */
-            for (let i = top + 1; i < bot; i++) {
-              const inner = truncateToWidth(result[i], Math.max(0, width - 2), "");
-              const pad = " ".repeat(Math.max(0, width - 2 - visibleWidth(inner)));
-              result[i] = _muted("\u2502") + inner + pad + _muted("\u2502");
-            }
-
-            return result;
+            return [frame(topLine), ...framedRows, frame(bottomLine)];
           } catch (e) {
             return super.render(width);
           }

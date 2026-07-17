@@ -129,6 +129,24 @@
       "skillFolderHash": "e0e028058b5259debdd94b78147c6d6c77bf7da2",
       "installedAt": "2026-05-14T03:52:40.442Z",
       "updatedAt": "2026-05-14T03:52:40.442Z"
+    },
+    "add-adapter": {
+      "source": "vercel/chat",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/vercel/chat.git",
+      "skillPath": ".agents/skills/add-adapter/SKILL.md",
+      "skillFolderHash": "0aa607499e8a487d7569b1e1a1db6e1896a8d2b1",
+      "installedAt": "2026-07-05T12:45:58.551Z",
+      "updatedAt": "2026-07-05T12:45:58.551Z"
+    },
+    "chat-sdk": {
+      "source": "vercel/chat",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/vercel/chat.git",
+      "skillPath": "skills/chat/SKILL.md",
+      "skillFolderHash": "3e8ce4a11c11bd9d78d84e0ebfa2d7b782ab6b60",
+      "installedAt": "2026-07-05T12:45:58.559Z",
+      "updatedAt": "2026-07-05T12:45:58.559Z"
     }
   },
   "dismissed": {

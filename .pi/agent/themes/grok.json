@@ -16,8 +16,8 @@
   "colors": {
     "accent": "accent",
     "border": "line",
-    "borderAccent": "line",
-    "borderMuted": "muted",
+    "borderAccent": "lineHot",
+    "borderMuted": "line",
     "success": "green",
     "error": "red",
     "warning": "yellow",
