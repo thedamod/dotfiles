@@ -29,6 +29,12 @@ function fmtThink(level: string): string {
 
 const SPIN = ["\u280B", "\u2819", "\u2839", "\u2838", "\u283C", "\u2834", "\u2826", "\u2827", "\u2807", "\u280F"];
 
+function dollarTokenBeforeCursor(text: string): { start: number } | null {
+  const match = text.match(/(?:^|\s)(\$[\w-]+)$/);
+  if (!match) return null;
+  return { start: match.index! + (match[0]!.length - match[1]!.length) };
+}
+
 /* ------------------------------------------------------------------ */
 /*  WSL2 clipboard helpers (merged from pi-wsl-images)               */
 /* ------------------------------------------------------------------ */
@@ -201,8 +207,30 @@ export default function (pi: ExtensionAPI) {
           }
         }
 
+        // Autocomplete changes the editor's height. Force a full follow-up render
+        // when it closes so the smaller prompt is anchored at the screen bottom.
+        cancelAutocomplete(): void {
+          super.cancelAutocomplete();
+          queueMicrotask(() => _tui.requestRender(true));
+        }
+
         // Handle Alt+V for WSL image paste (merged from pi-wsl-images)
         handleInput(data: string): void {
+          // Treat a selected $skill token as one atomic editor unit.
+          if (matchesKey(data, "backspace") || matchesKey(data, "ctrl+h")) {
+            const state = (this as any).state;
+            const line = state?.lines?.[state.cursorLine] ?? "";
+            const token = dollarTokenBeforeCursor(line.slice(0, state.cursorCol));
+            if (token) {
+              state.lines[state.cursorLine] = line.slice(0, token.start) + line.slice(state.cursorCol);
+              (this as any).setCursorCol(token.start);
+              this.onChange?.(this.getText());
+              (this as any).cancelAutocomplete();
+              _tui.requestRender();
+              return;
+            }
+          }
+
           if (matchesKey(data, "alt+v")) {
             void (async () => {
               if (!isWSL()) { super.handleInput(data); return; }
@@ -298,19 +326,25 @@ export default function (pi: ExtensionAPI) {
             const gap = Math.max(0, width - 2 - leftW - rightW);
             const bottomLine = "\u2570" + leftStr + "\u2500".repeat(gap) + rightStr + "\u256F";
 
-            /* -- side borders, preserving autocomplete rows -- */
-            const editorRows = result.slice(top + 1, baseBottom);
+            /* -- side borders; autocomplete occupies the top rows inside the box -- */
+            const accentToken = (line: string) => line.replace(
+              /(^|\s)(\$[\w-]+)/g,
+              (_m: string, before: string, token: string) =>
+                before + appTheme.fg("accent", appTheme.bold(token)),
+            );
+            const editorRows = result.slice(top + 1, baseBottom).map(accentToken);
             const autocompleteRows = result.slice(baseBottom + 1);
-            const bodyRows = autocompleteRows.length > 0
-              ? [...editorRows, " ".repeat(innerWidth), ...autocompleteRows]
-              : editorRows;
-            const framedRows = bodyRows.map((line) => {
+            const frameRow = (line: string) => {
               const inner = truncateToWidth(line, innerWidth, "");
               const pad = " ".repeat(Math.max(0, innerWidth - visibleWidth(inner)));
               return frame("\u2502") + inner + pad + frame("\u2502");
-            });
+            };
+            const bodyRows = autocompleteRows.length > 0
+              ? [...autocompleteRows, " ".repeat(innerWidth), ...editorRows]
+              : editorRows;
+            const framedBodyRows = bodyRows.map(frameRow);
 
-            return [frame(topLine), ...framedRows, frame(bottomLine)];
+            return [frame(topLine), ...framedBodyRows, frame(bottomLine)];
           } catch (e) {
             return super.render(width);
           }
