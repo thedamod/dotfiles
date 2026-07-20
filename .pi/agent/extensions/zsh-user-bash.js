@@ -19,9 +19,14 @@ function zsh_user_bash_default(pi) {
   pi.on("user_bash", () => {
     return {
       operations: {
-        exec(command, cwd, options) {
+        async exec(command, cwd, options) {
           const zshCommand = `exec ${shellQuote(getZshPath())} -fc ${shellQuote(command)}`;
-          return local.exec(zshCommand, cwd, options);
+          pi.events.emit("user-bash:start", { command, cwd });
+          try {
+            return await local.exec(zshCommand, cwd, options);
+          } finally {
+            pi.events.emit("user-bash:end", { command, cwd });
+          }
         }
       }
     };

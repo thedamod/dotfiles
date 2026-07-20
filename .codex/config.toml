@@ -1,0 +1,228 @@
+model = "gpt-5.6-sol"
+model_reasoning_effort = "low"
+approvals_reviewer = "user"
+service_tier = "default"
+plan_mode_reasoning_effort = "xhigh"
+[projects."/home/apollo"]
+trust_level = "trusted"
+
+[projects."/home/apollo/Code/Artemis"]
+trust_level = "untrusted"
+
+[projects."/home/apollo/resources/sandbox/lexical"]
+trust_level = "trusted"
+
+[projects."/home/apollo/Code/bm"]
+trust_level = "trusted"
+
+[projects."/home/apollo/Code/helio"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/just-bash"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/Apollo"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/apollo"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/AtomSimulator"]
+trust_level = "trusted"
+
+[projects."/mnt/c/Users/laksm/Documents/New folder/01-Important Files"]
+trust_level = "trusted"
+
+[projects."/mnt/c/Users/laksm/Documents/01-Important Files"]
+trust_level = "trusted"
+
+[projects."/mnt/c/Users/laksm/Documents/Templates"]
+trust_level = "trusted"
+
+[projects."/mnt/c/Users/laksm/Documents/Ambrosia"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/obsidian"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/tiptap"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/moss"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/hubble.md"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/avenire"]
+trust_level = "trusted"
+
+[projects."/home/apollo/Code/Avenire"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/tiptap-test"]
+trust_level = "trusted"
+
+[projects."/home/apollo/projects/avenire"]
+trust_level = "trusted"
+
+[projects."/home/apollo/projects/avenire/apps/web"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/chat-app"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/ai-ingestion"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/file-app"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/flashcard-app"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/graphing"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/test-interactivity"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/avenire-text"]
+trust_level = "trusted"
+
+[projects."/home/apollo/Code"]
+trust_level = "trusted"
+
+[projects."/home/apollo/Code/scribe"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/visualization_tool"]
+trust_level = "trusted"
+
+[projects."/home/apollo/Code/portfolio"]
+trust_level = "trusted"
+
+[projects."/home/apollo/Code/video"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox"]
+trust_level = "trusted"
+
+[projects."/home/apollo/projects/tools"]
+trust_level = "trusted"
+
+[projects."/home/apollo/Code/t3code"]
+trust_level = "trusted"
+
+[projects."/mnt/c/Users/laksm/Documents/Ambrosia - Copy"]
+trust_level = "trusted"
+
+[projects."/mnt/c/Users/laksm/Documents/Brain2"]
+trust_level = "trusted"
+
+[projects."/home/apollo/projects/prism"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/my-video"]
+trust_level = "trusted"
+
+[projects."/home/apollo/Code/arcaine"]
+trust_level = "trusted"
+
+[projects."/home/apollo/Code/landing-page"]
+trust_level = "trusted"
+
+[projects."/home/apollo/projects/avenire-landing"]
+trust_level = "trusted"
+
+[projects."/home/apollo/Code/terax-ai"]
+trust_level = "trusted"
+
+[projects."/home/apollo/Code/feynman"]
+trust_level = "trusted"
+
+[projects."/home/apollo/Code/codex"]
+trust_level = "trusted"
+
+[projects."/home/apollo/Hardware/Robot"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/models"]
+trust_level = "trusted"
+
+[projects."/home/apollo/research/AVSR"]
+trust_level = "trusted"
+
+[projects."/home/apollo/projects/portfolio"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/rolling-output"]
+trust_level = "trusted"
+
+[projects."/mnt/c/Users/laksm/Documents/Ambrosia-Avenire-Import"]
+trust_level = "trusted"
+
+[projects."/home/apollo/projects/inverse-kinematics"]
+trust_level = "trusted"
+
+[projects."/home/apollo/projects"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/sandbox/composer"]
+trust_level = "trusted"
+
+[projects."/home/apollo/projects/atlas"]
+trust_level = "trusted"
+
+[projects."/home/apollo/projects/taro"]
+trust_level = "trusted"
+
+[projects."/home/apollo/research/epoch"]
+trust_level = "trusted"
+
+[projects."/home/apollo/research/arcaine"]
+trust_level = "trusted"
+
+[projects."/home/apollo/resources/agent-config"]
+trust_level = "trusted"
+
+[notice]
+hide_rate_limit_model_nudge = true
+fast_default_opt_out = true
+hide_full_access_warning = true
+
+[notice.model_migrations]
+"gpt-5.1-codex-max" = "gpt-5.3-codex"
+"gpt-5.2" = "gpt-5.4"
+"gpt-5.3-codex" = "gpt-5.4"
+"gpt-5.2-codex" = "gpt-5.4"
+"gpt-5.4" = "gpt-5.5"
+
+[notice.external_config_migration_prompts.project_last_prompted_at]
+"/home/apollo/Code/terax-ai" = 1778417406
+
+[tui]
+status_line = ["model-with-reasoning", "project-root", "weekly-limit", "used-tokens", "git-branch"]
+notification_condition = "always"
+
+[tui.model_availability_nux]
+"gpt-5.5" = 4
+"gpt-5.6-sol" = 4
+
+[features]
+goals=true
+memories = true
+terminal_resize_reflow = true
+external_migration = true
+prevent_idle_sleep = true
+
+[memories]
+use_memories = true
+generate_memories = true
+
+[plugins."statsig@openai-curated"]
+enabled = true
+
+[agents]
+max_threads = 10
+max_depth = 3

@@ -1,0 +1,31 @@
+{
+  "providers": {
+    "arcaine": {
+      "baseUrl": "https://aether6430--arcaine-openai-api-serve.modal.run/v1",
+      "api": "openai-completions",
+      "apiKey": "!cat /home/apollo/.pi/agent/arcaine-api-key",
+      "authHeader": true,
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsReasoningEffort": false,
+        "maxTokensField": "max_tokens"
+      },
+      "models": [
+        {
+          "id": "arcaine",
+          "name": "Arcaine Qwen3.5 4B LoRA (Modal)",
+          "reasoning": false,
+          "input": ["text"],
+          "contextWindow": 16384,
+          "maxTokens": 2048,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          }
+        }
+      ]
+    }
+  }
+}

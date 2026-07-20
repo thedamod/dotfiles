@@ -94,6 +94,7 @@ function replaceImagePlaceholders(text: string, placeholders: Map<string, string
 export default function (pi: ExtensionAPI) {
   let tui: TUI | undefined;
   let working = false;
+  let execRunning = false;
   let spinIdx = 0;
   let spinTimer: ReturnType<typeof setInterval> | undefined;
   let branch: string | undefined;
@@ -259,9 +260,12 @@ export default function (pi: ExtensionAPI) {
             if (result.length < 2) return result;
 
             const _muted = this._muted || muted;
-            const frame = working
-              ? (s: string) => appTheme.fg("accent", s)
-              : _muted;
+            const userBashInput = this.getText().trimStart().startsWith("!");
+            const frame = userBashInput || execRunning
+              ? (s: string) => appTheme.fg("warning", s)
+              : working
+                ? (s: string) => appTheme.fg("accent", s)
+                : _muted;
 
             // Detect and blank the autocomplete separator line
             const hasAc = (this as any).autocompleteState;
@@ -355,9 +359,11 @@ export default function (pi: ExtensionAPI) {
     });
   });
 
-  /* -- agent working spinner -- */
+  /* -- agent and direct exec activity -- */
   pi.on("agent_start", () => { working = true; stopSpin(); startSpin(); tui?.requestRender(); });
   pi.on("agent_end", () => { working = false; stopSpin(); tui?.requestRender(); });
+  pi.events.on("user-bash:start", () => { execRunning = true; tui?.requestRender(); });
+  pi.events.on("user-bash:end", () => { execRunning = false; tui?.requestRender(); });
 
   /* -- TPS / TTFT -- */
   pi.on("turn_start", async () => { tStart = Date.now(); firstTok = null; });

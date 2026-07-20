@@ -1,0 +1,13 @@
+{
+  "tools": {
+    "search": "firecrawl",
+    "contents": "firecrawl"
+  },
+  "providers": {
+    "firecrawl": {
+      "credentials": {
+        "api": "FIRECRAWL_API_KEY"
+      }
+    }
+  }
+}

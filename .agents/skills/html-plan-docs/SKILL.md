@@ -9,7 +9,7 @@ description: Generate clean HTML plan documents — strategy notes, product spec
 
 Build a small app whose whole job is to collect structured plan/spec content and render a clean HTML document. Keep the app simple enough to inspect and share quickly.
 
-Create new plan-doc projects under the caller's current repository in `./plan/<plan-slug>/` unless the user gives a different path. The `./plan` directory is the default home for these generated planning artifacts, so the app, source files, generated HTML export, and notes stay together instead of being scattered through the main application.
+Follow the global `plan-docs` skill for artifact location, palette, HTML quality, and upload behavior. Create temporary plan artifacts under `/tmp/plans/<plan-slug>/plan.html` unless the user explicitly requests a persistent repository artifact. The HTML export must be complete and self-contained so it can be uploaded directly.
 
 ## Recommended App Shape
 
@@ -203,11 +203,11 @@ Generated HTML documents should be useful as artifacts.
 
 Before calling the work done:
 
-1. The project lives under `./plan/<plan-slug>/` unless the user requested a different path.
+1. The complete plan artifact lives at `/tmp/plans/<plan-slug>/plan.html` unless the user requested a different path.
 2. Document queries and mutations are scoped to the current user (when user authentication is part of the app).
 3. The UI can create, edit, preview, and export/view an HTML document.
 4. A complete generated HTML document exists in the plan directory or is available through a documented HTML endpoint.
 5. The app has no generic dashboard filler, fake charts, decorative gradients, or oversized rounded panels.
 6. The rendered document is readable on mobile and printable.
 7. The local dev server runs when local verification is requested.
-8. The HTML export path and any deployed URL are reported in the final answer.
+8. Run `cd /tmp/plans/<plan-slug> && bunx postplan upload ./plan.html` and report the HTML path and upload result in the final answer.

@@ -88,6 +88,9 @@ api_key.*
 .config/pulse/cookie
 .config/turborepo/telemetry.json
 .config/uv/**
+.config/caddy/autosave.json
+.config/google-chrome-for-testing/
+.config/react-doctor-nodejs/
 
 # Shell/editor caches
 .zsh_history

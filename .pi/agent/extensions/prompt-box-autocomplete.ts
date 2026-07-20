@@ -204,7 +204,6 @@ export default function (pi: ExtensionAPI): void {
 			createSmartAutocompleteProvider(current, () => getSkillCommands(pi)),
 		);
 
-		ctx.ui.notify("Prompt-box: $ skill autocomplete enabled", "info");
 	});
 
 	// 3. Expand $name and /skill:name on send

@@ -1,7 +1,7 @@
 {
   "lastChangelogVersion": "0.80.10",
-  "defaultProvider": "opencode",
-  "defaultModel": "gpt-5.6-sol",
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.6-terra",
   "defaultThinkingLevel": "high",
   "images": {
     "blockImages": false
@@ -10,15 +10,16 @@
   "collapseChangelog": true,
   "quietStartup": false,
   "enableInstallTelemetry": false,
-  "theme": "grok",
+  "theme": "apollo",
   "doubleEscapeAction": "tree",
   "packages": [
     "npm:pi-image-tools",
     "npm:@dreki-gg/pi-subagent",
     "npm:pi-web-providers",
     "npm:@ff-labs/pi-fff",
-    "npm:pi-model-discovery"
+    "npm:pi-model-discovery",
+    "npm:pi-code-previews"
   ],
-  "enableSkillCommands": true,
+  "enableSkillCommands": false,
   "transport": "auto"
 }

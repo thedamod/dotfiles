@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/earendil-works/pi-mono/main/packages/coding-agent/src/modes/interactive/theme/theme-schema.json",
-  "name": "grok",
+  "name": "apollo",
   "vars": {
     "fg": "#f3eee4",
     "muted": "#8b8172",

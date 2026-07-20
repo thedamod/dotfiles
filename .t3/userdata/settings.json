@@ -1,0 +1,17 @@
+{
+  "enableAssistantStreaming": true,
+  "textGenerationModelSelection": {
+    "instanceId": "opencode",
+    "model": "opencode/nemotron-3-ultra-free",
+    "options": [
+      {
+        "id": "variant",
+        "value": "low"
+      },
+      {
+        "id": "agent",
+        "value": "build"
+      }
+    ]
+  }
+}

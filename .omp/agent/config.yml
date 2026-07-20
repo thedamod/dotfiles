@@ -1,0 +1,6 @@
+providers:
+  webSearch: auto
+symbolPreset: unicode
+theme:
+  light: light
+setupVersion: 1

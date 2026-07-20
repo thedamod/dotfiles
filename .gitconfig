@@ -13,3 +13,5 @@
 	helper = !/home/linuxbrew/.linuxbrew/bin/gh auth git-credential
 [core]
 	excludesFile = /home/apollo/.gitignore_global
+[coderabbit]
+	machineId = cli/d7538bedec12454ca6e1e3b57d8ea540
