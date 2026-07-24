@@ -18,6 +18,19 @@ echo "Log: $LOG"
 cmd() { command -v "$1" >/dev/null 2>&1; }
 section() { echo; echo "━━━ $1 ━━━"; }
 
+retry() {
+  local n=0
+  until "$@"; do
+    n=$((n+1))
+    [ "$n" -ge 3 ] && return 1
+    sleep 2
+  done
+}
+
+# ---- detect Ubuntu release ----
+source /etc/os-release
+CODENAME="${VERSION_CODENAME:-noble}"
+
 # ============================================================
 # 1. System sources & packages
 # ============================================================
@@ -27,82 +40,100 @@ sudo mkdir -p /etc/apt/keyrings /etc/apt/sources.list.d
 
 # Charm
 if [ ! -f /etc/apt/keyrings/charm.gpg ]; then
-  sudo curl -fsSL https://repo.charm.sh/apt/gpg.key -o /etc/apt/keyrings/charm.gpg
+  retry curl --fail --location --silent --show-error \
+    https://repo.charm.sh/apt/gpg.key \
+    | sudo tee /etc/apt/keyrings/charm.gpg >/dev/null
   echo 'deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *' \
     | sudo tee /etc/apt/sources.list.d/charm.list >/dev/null
 fi
 
 # Cloudflared
-if [ ! -f /usr/share/keyrings/cloudflare-public-v2.gpg ]; then
-  sudo curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg -o /usr/share/keyrings/cloudflare-public-v2.gpg
-  echo 'deb [signed-by=/usr/share/keyrings/cloudflare-public-v2.gpg] https://pkg.cloudflare.com/cloudflared any main' \
+if [ ! -f /etc/apt/keyrings/cloudflare.gpg ]; then
+  retry curl --fail --location --silent --show-error \
+    https://pkg.cloudflare.com/cloudflare-main.gpg \
+    | sudo tee /etc/apt/keyrings/cloudflare.gpg >/dev/null
+  echo "deb [signed-by=/etc/apt/keyrings/cloudflare.gpg] https://pkg.cloudflare.com/cloudflared any main" \
     | sudo tee /etc/apt/sources.list.d/cloudflared.list >/dev/null
 fi
 
 # Tailscale
-if [ ! -f /usr/share/keyrings/tailscale-archive-keyring.gpg ]; then
-  sudo curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg -o /usr/share/keyrings/tailscale-archive-keyring.gpg
-  echo 'deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/ubuntu noble main' \
+if [ ! -f /etc/apt/keyrings/tailscale.gpg ]; then
+  retry curl --fail --location --silent --show-error \
+    "https://pkgs.tailscale.com/stable/ubuntu/${CODENAME}.noarmor.gpg" \
+    | sudo tee /etc/apt/keyrings/tailscale.gpg >/dev/null
+  echo "deb [signed-by=/etc/apt/keyrings/tailscale.gpg] https://pkgs.tailscale.com/stable/ubuntu ${CODENAME} main" \
     | sudo tee /etc/apt/sources.list.d/tailscale.list >/dev/null
 fi
 
 # PostgreSQL (official)
-if [ ! -f /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc ]; then
-  sudo curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
-  echo 'deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main' \
+if [ ! -f /etc/apt/keyrings/postgresql.asc ]; then
+  retry curl --fail --location --silent --show-error \
+    https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+    | sudo tee /etc/apt/keyrings/postgresql.asc >/dev/null
+  echo "deb [signed-by=/etc/apt/keyrings/postgresql.asc] https://apt.postgresql.org/pub/repos/apt ${CODENAME}-pgdg main" \
     | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
 fi
 
 # ngrok
-if [ ! -f /etc/apt/sources.list.d/ngrok.list ]; then
-  sudo curl -fsSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc -o /etc/apt/keyrings/ngrok.asc
-  echo 'deb [signed-by=/etc/apt/keyrings/ngrok.asc] https://ngrok-agent.s3.amazonaws.com bookworm main' \
+if [ ! -f /etc/apt/keyrings/ngrok.asc ]; then
+  retry curl --fail --location --silent --show-error \
+    https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+    | sudo tee /etc/apt/keyrings/ngrok.asc >/dev/null
+  echo "deb [signed-by=/etc/apt/keyrings/ngrok.asc] https://ngrok-agent.s3.amazonaws.com bookworm main" \
     | sudo tee /etc/apt/sources.list.d/ngrok.list >/dev/null
 fi
 
 # Gierens (eza)
 if [ ! -f /etc/apt/keyrings/gierens.gpg ]; then
-  sudo mkdir -p /etc/apt/keyrings
-  sudo curl -fsSL https://deb.gierens.de/gierens.gpg -o /etc/apt/keyrings/gierens.gpg
-  echo 'deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main' \
+  retry curl --fail --location --silent --show-error \
+    https://deb.gierens.de/gierens.gpg \
+    | sudo tee /etc/apt/keyrings/gierens.gpg >/dev/null
+  echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" \
     | sudo tee /etc/apt/sources.list.d/gierens.list >/dev/null
 fi
 
 section "Installing APT packages"
 sudo apt-get update -qq
 
-# Core toolchain
+# Core — expected to all succeed
 sudo apt-get install -y -qq \
   build-essential curl git unzip \
   zsh neovim \
   python3 python3-dev python3-pip python3-venv pipx \
   golang-go rustup \
-  postgresql postgresql-client postgresql-16-pgvector \
+  postgresql postgresql-client postgresql-common \
   redis-server \
   gh ripgrep fd-find fzf zoxide eza bat glow \
   cmake bubblewrap \
   ffmpeg xclip \
   stow zstd \
   tailscale cloudflared ngrok \
-  television \
   ca-certificates software-properties-common \
   libssl-dev pkg-config \
-  || echo "Some packages may have failed (non-fatal)"
+  texlive-full \
+  tmate \
+  libcairo2-dev libpango1.0-dev libgl1-mesa-dev \
+  libglfw3-dev libglm-dev libglew-dev libsixel-bin
 
-# Wine (optional)
-sudo apt-get install -y -qq wine wine32:i386 wine64 2>/dev/null || true
+# Detect installed PostgreSQL major version for pgvector
+PG_MAJOR=$(pg_config --version 2>/dev/null | grep -oP '\d+' | head -1 || echo 16)
+sudo apt-get install -y -qq "postgresql-${PG_MAJOR}-pgvector" || true
+
+# Optional packages (won't abort on failure)
+sudo apt-get install -y -qq television 2>/dev/null || echo "  (television not in repos, skipping)"
+sudo apt-get install -y -qq wine wine32:i386 wine64 2>/dev/null || echo "  (wine not available, skipping)"
 
 # ============================================================
 # 2. Rust
 # ============================================================
 section "Rust toolchain"
-if ! cmd rustc; then
-  rustup default stable 2>/dev/null || {
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    source "$HOME/.cargo/env"
-  }
+if ! command -v rustup >/dev/null; then
+  retry curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+    | sh -s -- -y
 fi
-rustup component add rustfmt clippy 2>/dev/null || true
+source "$HOME/.cargo/env"
+rustup default stable
+rustup component add rustfmt clippy
 echo "rustc: $(rustc --version)"
 
 # ============================================================
@@ -110,10 +141,13 @@ echo "rustc: $(rustc --version)"
 # ============================================================
 section "bun"
 if ! cmd bun; then
-  curl -fsSL https://bun.sh/install | bash
+  retry curl -fsSL https://bun.sh/install | bash
 fi
 export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
+case ":$PATH:" in
+  *":$BUN_INSTALL/bin:"*) ;;
+  *) export PATH="$BUN_INSTALL/bin:$PATH" ;;
+esac
 echo "bun: $(bun --version)"
 
 # ============================================================
@@ -121,12 +155,13 @@ echo "bun: $(bun --version)"
 # ============================================================
 section "Node.js (fnm)"
 if ! cmd fnm; then
-  curl -fsSL https://fnm.vercel.app/install | bash
+  retry curl -fsSL https://fnm.vercel.app/install | bash
   export PATH="$HOME/.local/share/fnm:$PATH"
   eval "$(fnm env)"
 fi
-fnm install --lts 2>/dev/null || fnm install 22
-fnm default $(fnm list | head -1 | tr -d '→ ')
+fnm install --lts
+fnm default lts-latest
+fnm use lts-latest
 echo "node: $(node --version)"
 
 # ============================================================
@@ -135,7 +170,7 @@ echo "node: $(node --version)"
 section "Oh My Zsh"
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
   RUNZSH=no KEEP_ZSHRC=yes sh -c \
-    "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    "$(retry curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 fi
 
 ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
@@ -143,51 +178,50 @@ for plugin in zsh-autosuggestions fzf-tab; do
   dir="$ZSH_CUSTOM/plugins/$plugin"
   if [ ! -d "$dir/.git" ]; then
     rm -rf "$dir"
-    git clone --depth=1 "https://github.com/zsh-users/$plugin" "$dir" 2>/dev/null || true
+    retry git clone --depth=1 "https://github.com/zsh-users/$plugin" "$dir"
   fi
 done
 # fast-syntax-highlighting
 if [ ! -d "$ZSH_CUSTOM/plugins/fast-syntax-highlighting/.git" ]; then
   rm -rf "$ZSH_CUSTOM/plugins/fast-syntax-highlighting"
-  git clone --depth=1 https://github.com/zdharma-continuum/fast-syntax-highlighting \
-    "$ZSH_CUSTOM/plugins/fast-syntax-highlighting" 2>/dev/null || true
+  retry git clone --depth=1 https://github.com/zdharma-continuum/fast-syntax-highlighting \
+    "$ZSH_CUSTOM/plugins/fast-syntax-highlighting"
 fi
 
 # ============================================================
-# 6. Dotfiles (symlinks via stow or manual)
+# 6. Dotfiles (symlinks)
 # ============================================================
 section "Dotfiles"
-if [ ! -d "$DOTFILES" ]; then
-  git clone https://github.com/thedamod/dotfiles.git "$DOTFILES"
+if [ ! -d "$DOTFILES/.git" ]; then
+  rm -rf "$DOTFILES"
+  retry git clone --depth=1 https://github.com/thedamod/dotfiles.git "$DOTFILES"
 fi
 cd "$DOTFILES"
 
-# Symlink everything tracked (stow-safe). The dotfiles repo
-# carries the exact directory layout expected at $HOME.
+# Shell rc files
 for item in .zshrc .zshenv .profile .bashrc .gitconfig .gitignore; do
   [ -f "$item" ] && ln -sf "$DOTFILES/$item" "$HOME/$item"
 done
-for dir in .config .oh-my-zsh/custom .pi .agents; do
+
+# Directories — use -n to avoid following existing symlinks
+for dir in .config .oh-my-zsh/custom .agents; do
   [ -d "$DOTFILES/$dir" ] && ln -sfn "$DOTFILES/$dir" "$HOME/$dir" 2>/dev/null || true
 done
-# Selective .pi linking — the settings, extensions, themes live in dotfiles,
+
+# Selective .pi linking — settings and extensions live in dotfiles,
 # but auth.json and runtime state stay local.
 mkdir -p "$HOME/.pi/agent"
 for f in settings.json code-previews.json models.json web-providers.json AGENTS.md; do
   [ -f "$DOTFILES/.pi/agent/$f" ] && ln -sf "$DOTFILES/.pi/agent/$f" "$HOME/.pi/agent/$f"
 done
-if [ -d "$DOTFILES/.pi/agent/extensions" ]; then
-  ln -sfn "$DOTFILES/.pi/agent/extensions" "$HOME/.pi/agent/extensions"
-fi
-if [ -d "$DOTFILES/.pi/agent/themes" ]; then
-  ln -sfn "$DOTFILES/.pi/agent/themes" "$HOME/.pi/agent/themes"
-fi
+[ -d "$DOTFILES/.pi/agent/extensions" ] && ln -sfn "$DOTFILES/.pi/agent/extensions" "$HOME/.pi/agent/extensions"
+[ -d "$DOTFILES/.pi/agent/themes" ] && ln -sfn "$DOTFILES/.pi/agent/themes" "$HOME/.pi/agent/themes"
 
 # ============================================================
 # 7. Global Bun + Pi packages
 # ============================================================
 section "Global Bun packages"
-# Pin current versions — install each
+
 GLOBAL_PKGS=(
   "@earendil-works/pi-coding-agent"
   "@earendil-works/pi-tui"
@@ -206,9 +240,23 @@ GLOBAL_PKGS=(
   "tree-sitter-cli"
   "@googleworkspace/cli"
 )
+
+FAILED_PKGS=()
 for pkg in "${GLOBAL_PKGS[@]}"; do
-  bun install -g "$pkg" 2>/dev/null && echo "  ✓ $pkg" || echo "  ✗ $pkg (will retry later)"
+  if bun install -g "$pkg" 2>/dev/null; then
+    echo "  ✓ $pkg"
+  else
+    echo "  ✗ $pkg"
+    FAILED_PKGS+=("$pkg")
+  fi
 done
+
+if ((${#FAILED_PKGS[@]})); then
+  echo "Retrying failed packages..."
+  for pkg in "${FAILED_PKGS[@]}"; do
+    retry bun install -g "$pkg" 2>/dev/null && echo "  ✓ $pkg (retry)" || echo "  ✗ $pkg (gave up)"
+  done
+fi
 
 # Pi skill packages
 PI_PKGS=(
@@ -226,11 +274,13 @@ if cmd pi; then
 fi
 
 # ============================================================
-# 8. Services
+# 8. Services (WSL-safe)
 # ============================================================
 section "System services"
-sudo systemctl enable postgresql redis-server tailscaled 2>/dev/null || true
-sudo systemctl start postgresql redis-server 2>/dev/null || true
+if command -v systemctl >/dev/null && systemctl list-unit-files >/dev/null 2>&1; then
+  sudo systemctl enable postgresql redis-server tailscaled 2>/dev/null || true
+  sudo systemctl start postgresql redis-server 2>/dev/null || true
+fi
 
 # ============================================================
 # 9. SSH + GitHub auth
@@ -239,8 +289,10 @@ section "SSH key"
 SSH_KEY="$HOME/.ssh/id_ed25519"
 if [ ! -f "$SSH_KEY" ]; then
   ssh-keygen -t ed25519 -C "github" -f "$SSH_KEY" -N "" 2>/dev/null
-  eval "$(ssh-agent -s)" 2>/dev/null || true
-  ssh-add "$SSH_KEY" 2>/dev/null || true
+  if ! ssh-add -l >/dev/null 2>&1; then
+    eval "$(ssh-agent -s)"
+    ssh-add "$SSH_KEY"
+  fi
   echo ""
   echo "────────────────────────────────────────────"
   echo "🔑 Add this SSH public key to GitHub:"
@@ -262,4 +314,8 @@ fi
 # ============================================================
 section "✅ Bootstrap complete"
 echo "Restart terminal or run:  exec zsh"
-echo "Then run:                 cd ~/dotfiles && setup.sh"  # idempotent
+echo "Then finish setup:        ssh -T git@github.com"
+echo "                         railway login"
+echo "                         pi auth login"
+echo "                         codex auth login"
+echo "                         sudo tailscale up"
